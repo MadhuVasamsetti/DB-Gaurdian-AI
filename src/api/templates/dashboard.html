@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DB Guardian AI - Command Center</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: radial-gradient(circle at top, #0f2027, #1c1c2b, #000);
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 30px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: cyan;
+            letter-spacing: 2px;
+        }
+
+        .navbar ul {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar ul li {
+            margin: 0 15px;
+        }
+
+        .navbar ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .navbar ul li a:hover {
+            color: cyan;
+        }
+
+        .logout-btn {
+            background: red;
+            padding: 6px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+        }
+
+        h1 {
+            text-align: center;
+            padding: 20px;
+            font-size: 32px;
+            letter-spacing: 3px;
+            text-shadow: 0 0 20px cyan;
+        }
+
+        .clock {
+            position: absolute;
+            top: 70px;
+            left: 20px;
+            font-size: 18px;
+            opacity: 0.8;
+        }
+
+        .threat-level {
+            text-align: center;
+            margin: 20px auto;
+            font-size: 22px;
+            font-weight: bold;
+            padding: 12px;
+            border-radius: 12px;
+            width: 300px;
+            transition: 0.4s;
+        }
+
+        .low { background: rgba(0,255,100,0.2); box-shadow: 0 0 20px #00ff99; }
+        .medium { background: rgba(255,165,0,0.2); box-shadow: 0 0 20px orange; }
+        .high { background: rgba(255,0,0,0.3); box-shadow: 0 0 30px red; animation: blink 1s infinite; }
+
+        @keyframes blink { 50% { opacity: 0.4; } }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 30px;
+            padding: 40px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 25px;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 0 25px rgba(0,255,255,0.2);
+        }
+
+        canvas { height: 300px !important; }
+
+        .health-bar-bg {
+            width: 100%;
+            height: 25px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .health-bar { height: 100%; width: 100%; transition: 0.6s ease-in-out; }
+
+        .alert-popup {
+            position: fixed;
+            top: 20px;
+            right: -400px;
+            background: red;
+            padding: 20px;
+            border-radius: 10px;
+            transition: right 0.5s ease-in-out;
+            z-index: 999;
+            font-weight: bold;
+        }
+
+        .alert-popup.show { right: 20px; }
+
+        /* Responsive Navbar */
+        @media (max-width: 768px) {
+            .navbar ul {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Navbar -->
+<div class="navbar">
+    <div class="logo">DB Guardian AI</div>
+    <ul>
+        <li><a href="#">Dashboard</a></li>
+        <li><a href="#">Metrics</a></li>
+        <li><a href="#">Settings</a></li>
+        <li><a href="#">Profile</a></li>
+    </ul>
+    <a href="/logout" class="logout-btn">Logout</a>
+</div>
+
+<!-- 🔊 Alarm -->
+<audio id="alarmSound" preload="auto">
+    <source src="{{ url_for('static', filename='alarm.mp3') }}" type="audio/mpeg">
+</audio>
+
+<div class="clock" id="clock"></div>
+
+<h1>🛡 AI Cyber Defense Command Center</h1>
+
+<div id="threatLevel" class="threat-level low">Threat Level: LOW</div>
+
+<div id="alertPopup" class="alert-popup">
+    ⚠ SECURITY ALERT DETECTED!
+</div>
+
+<div class="dashboard">
+    <div class="card">
+        <h3>Live System Metrics</h3>
+        <canvas id="systemChart"></canvas>
+    </div>
+
+    <div class="card">
+        <h3>System Health</h3>
+        <div class="health-bar-bg">
+            <div id="healthBar" class="health-bar"></div>
+        </div>
+        <p id="healthText"></p>
+    </div>
+</div>
+
+<script>
+let alarmEnabled = true; // Alarm is now always enabled
+let alarmPlayed = false;
+
+// Clock
+setInterval(() => {
+    document.getElementById("clock").innerText =
+        new Date().toLocaleTimeString();
+}, 1000);
+
+// Chart
+const ctx = document.getElementById('systemChart').getContext('2d');
+const systemChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: [
+            { label: 'CPU %', data: [], borderColor: '#00ffff' },
+            { label: 'RAM %', data: [], borderColor: '#ff00ff' },
+            { label: 'Disk %', data: [], borderColor: '#00ff99' }
+        ]
+    },
+    options: { animation: false, scales: { y: { min: 0, max: 100 } } }
+});
+
+function updateChart(cpu, ram, disk) {
+    if (systemChart.data.labels.length > 20) {
+        systemChart.data.labels.shift();
+        systemChart.data.datasets.forEach(ds => ds.data.shift());
+    }
+    systemChart.data.labels.push('');
+    systemChart.data.datasets[0].data.push(cpu);
+    systemChart.data.datasets[1].data.push(ram);
+    systemChart.data.datasets[2].data.push(disk);
+    systemChart.update();
+}
+
+async function fetchData() {
+    const response = await fetch('/live-data');
+    const data = await response.json();
+
+    updateChart(data.metrics.cpu, data.metrics.ram, data.metrics.disk);
+
+    const threat = document.getElementById("threatLevel");
+    const healthBar = document.getElementById("healthBar");
+    const healthText = document.getElementById("healthText");
+    const alarm = document.getElementById("alarmSound");
+
+    healthBar.style.width = data.health_score + "%";
+    healthText.innerText = "Health Score: " + data.health_score + "%";
+
+    if (data.health_score < 80 && alarmEnabled) {
+        threat.className = "threat-level high";
+        threat.innerText = "Threat Level: HIGH 🚨";
+        healthBar.style.background = "red";
+
+        if (!alarmPlayed) {
+            alarm.play();
+            alarmPlayed = true;
+        }
+    } else {
+        threat.className = "threat-level low";
+        threat.innerText = "Threat Level: LOW";
+        healthBar.style.background = "#00ffcc";
+
+        alarm.pause();
+        alarm.currentTime = 0;
+        alarmPlayed = false;
+    }
+}
+
+setInterval(fetchData, 2000);
+fetchData();
+</script>
+
+</body>
+</html>

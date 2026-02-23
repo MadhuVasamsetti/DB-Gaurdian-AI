@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DB Guardian AI - Logout</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="navbar">
+    <div class="logo">DB Guardian AI</div>
+    <ul>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="metrics.html">Metrics</a></li>
+        <li><a href="settings.html">Settings</a></li>
+        <li><a href="profile.html">Profile</a></li>
+    </ul>
+    <a href="logout.html" class="logout-btn active">Logout</a>
+</div>
+
+<h1>✅ You have been logged out</h1>
+<p style="text-align:center;">Redirecting to login page...</p>
+
+<script>
+    setTimeout(() => {
+        window.location.href = "login.html"; // or your login page
+    }, 3000);
+</script>
+
+</body>
+</html>

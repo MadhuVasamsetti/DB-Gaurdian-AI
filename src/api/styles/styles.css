@@ -1,0 +1,102 @@
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: radial-gradient(circle at top, #0f2027, #1c1c2b, #000);
+    color: white;
+    overflow-x: hidden;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 30px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.navbar .logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: cyan;
+    letter-spacing: 2px;
+}
+
+.navbar ul {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar ul li {
+    margin: 0 15px;
+}
+
+.navbar ul li a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.navbar ul li a:hover,
+.navbar ul li a.active {
+    color: cyan;
+}
+
+.logout-btn {
+    background: red;
+    padding: 6px 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+}
+
+h1 {
+    text-align: center;
+    padding: 20px;
+    font-size: 32px;
+    letter-spacing: 3px;
+    text-shadow: 0 0 20px cyan;
+}
+
+.dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    padding: 40px;
+}
+
+.card {
+    background: rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 25px;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 0 25px rgba(0,255,255,0.2);
+}
+
+.clock {
+    position: absolute;
+    top: 70px;
+    left: 20px;
+    font-size: 18px;
+    opacity: 0.8;
+}
+
+.threat-level {
+    text-align: center;
+    margin: 20px auto;
+    font-size: 22px;
+    font-weight: bold;
+    padding: 12px;
+    border-radius: 12px;
+    width: 300px;
+}
+
+.low { background: rgba(0,255,100,0.2); box-shadow: 0 0 20px #00ff99; }
+.high { background: rgba(255,0,0,0.3); box-shadow: 0 0 30px red; }
